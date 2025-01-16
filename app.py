@@ -1,11 +1,25 @@
 import streamlit as st
-from ottobot_init import create_new_assistant_if_not_exists
+from ottobot_init import create_new_ottobot_with_files
 
 def main():
     st.title("Continuous Chat with History")
 
     # Initialize simplest ottobot
-    ottobot = create_new_assistant_if_not_exists("ottobot")
+    ottobot = create_new_ottobot_with_files("ottobotV2", [
+        "docs/CALCULATOR A.M. Nutrition & Lifestyle Protocol Data Sources.pdf",
+        "docs/MACROS A.M. Nutrition & Lifestyle Protocol Data Sources.pdf",
+        "docs/MACROS Mark Ottobre Master File Data Sources.pdf",
+        "docs/Mark Ottobre Master File Data Sources.pdf",
+        "docs/Mark Ottobre Master File.pdf",
+        "docs/MEAL PLANS A.M. Nutrition & Lifestyle Protocol Data Sources.pdf",
+        "docs/OVERVIEW A.M. Nutrition & Lifestyle Protocol Data Sources.pdf",
+        "docs/PROGRAM Mark Ottobre Master File Data Sources.pdf",
+        "docs/SYSTEM Mark Ottobre Master File Data Sources.pdf",
+        "docs/TIMELINE A.M. Nutrition & Lifestyle Protocol Data Sources.pdf",
+        "docs/TIMELINE Mark Ottobre Master File Data Sources.pdf",
+        "docs/The Enterprise Diet.pdf",
+        "docs/ENTERPRISE FITNESS - USER MANUAL.pdf",
+    ])
 
     # Chat UI
     st.subheader("Chat with Your Knowledge Base")

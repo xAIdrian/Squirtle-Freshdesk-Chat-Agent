@@ -29,3 +29,10 @@ def create_new_assistant_if_not_exists(name):
             ],
             model="gpt-4o"
         )
+
+def create_new_ottobot_with_files(name, files):
+    assistant = create_new_assistant_if_not_exists(name)
+    vector_store = get_or_create_vector_store(assistant.id)
+    for file in files:
+        vector_store.add_documents(file)
+    return assistant
