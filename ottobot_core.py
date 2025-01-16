@@ -48,47 +48,69 @@ def upload_vector_store_files_batch(vectorstore_id, file_paths):
 
 def get_or_create_vector_store(assistant_id):
     """Retrieve or create the vector store for the assistant."""
-    # try:
-    assistant = openaiClient.beta.assistants.retrieve(assistant_id)
-
-    # Check if vector store already exists
-    first_vector_store_id = assistant.tool_resources.file_search.vector_store_ids[0]
-    if first_vector_store_id:
-        print(f"Vector store already exists: {first_vector_store_id}")
-        return openaiClient.beta.vector_stores.retrieve(vector_store_id=first_vector_store_id)
-
-    # Create a new vector store
-    vector_store = openaiClient.beta.vector_stores.create(name="ottobot-vector-store")
-    print(f"Vector store created: {vector_store}")
-    openaiClient.beta.assistants.update(
-        assistant_id, 
-        tool_resources={
-            "file_search": {"vector_store_ids": [vector_store.id]}
-        }
-    )
-    print(f"Assistant updated with vector store: {assistant}")
-
-    return vector_store
-    # except Exception as e:
-    #     print(f"Error retrieving assistant: {e}")
-    #     return None
-
-def upload_file_to_vector_store(assistant_id, file_path):
     try:
-        # Upload file to assistant's vector store
-        vector_store_id = get_or_create_vector_store(assistant_id)
-        openai_file = openaiClient.beta.files.create({
-            "file": file_path,
-            "purpose": "assistants"
-        })
-        openaiClient.beta.vector_stores.files.create(vector_store_id, {
-            "file_id": openai_file["id"]
-        })
-        print(f"File uploaded to vector store successfully! File ID: {openai_file['id']}")
-        return openai_file["id"]
+        assistant = openaiClient.beta.assistants.retrieve(assistant_id)
+
+        # Check if vector store already exists
+        first_vector_store_id = assistant.tool_resources.file_search.vector_store_ids[0]
+        if first_vector_store_id:
+            print(f"Vector store already exists: {first_vector_store_id}")
+            return openaiClient.beta.vector_stores.retrieve(vector_store_id=first_vector_store_id)
+
+        # Create a new vector store
+        vector_store = openaiClient.beta.vector_stores.create(name="ottobot-vector-store")
+        print(f"Vector store created: {vector_store}")
+        openaiClient.beta.assistants.update(
+            assistant_id, 
+            tool_resources={
+                "file_search": {"vector_store_ids": [vector_store.id]}
+            }
+        )
+        print(f"Assistant updated with vector store: {assistant}")
+
+        return vector_store
     except Exception as e:
-        print(f"Error uploading file: {e}")
+        print(f"Error retrieving assistant: {e}")
         return None
+
+def retrieve_vector_store(vectorstore_id):
+    return openaiClient.beta.vector_stores.retrieve(vector_store_id=vectorstore_id)
+
+def upload_vector_store_files_batch(vectorstore_id, file_paths):
+    vector_store = retrieve_vector_store(vectorstore_id)
+    if vector_store.file_count > 0:
+        return vector_store
+
+    file_ids = []
+    for file_path in file_paths:
+        try:
+            # First upload the file to OpenAI
+            with open(file_path, 'rb') as file:
+                uploaded_file = openaiClient.files.create(
+                    file=file,
+                    purpose="assistants"
+                )
+            
+            # Then create the vector store file
+            vector_store_file = openaiClient.beta.vector_stores.files.create(
+                vector_store_id=vectorstore_id,
+                file_id=uploaded_file.id
+            )
+            file_ids.append(vector_store_file.id)
+        except FileNotFoundError:
+            print(f"File not found: {file_path}")
+        except Exception as e:
+            print(f"Error processing file {file_path}: {e}")
+
+    if not file_ids:
+        return None
+
+    vector_store_file_batch = openaiClient.beta.vector_stores.file_batches.create(
+        vector_store_id=vectorstore_id,
+        file_ids=file_ids
+    )
+    print(f"Vector store file batch created: {vector_store_file_batch}")
+    return vector_store_file_batch
 
 def delete_file_from_vector_store(assistant_id, file_id):
     try:
