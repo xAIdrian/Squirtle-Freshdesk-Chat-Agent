@@ -1,5 +1,5 @@
 from openai import OpenAI
-from ottobot_core import list_assistants, create_assistant, retrieve_assistant, get_or_create_vector_store
+from ottobot_core import list_assistants, create_assistant, retrieve_assistant, get_or_create_vector_store, create_thread, retrieve_thread, upload_vector_store_files_batch
 
 def create_new_assistant_if_not_exists(name):
     assistants = list_assistants()
@@ -30,9 +30,16 @@ def create_new_assistant_if_not_exists(name):
             model="gpt-4o"
         )
 
-def create_new_ottobot_with_files(name, files):
+def get_ottobot_with_vectore_store(name, files):
     assistant = create_new_assistant_if_not_exists(name)
     vector_store = get_or_create_vector_store(assistant.id)
-    for file in files:
-        vector_store.add_documents(file)
+    upload_vector_store_files_batch(vector_store.id, files)
     return assistant
+
+def load_thread_assign_to_assistant(thread_id, assistant_id):
+    if thread_id:
+        thread = retrieve_thread(thread_id)
+    else:
+        thread = create_thread()
+    assistant = retrieve_assistant(assistant_id)
+    return thread, assistant

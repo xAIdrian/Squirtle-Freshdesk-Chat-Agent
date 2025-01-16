@@ -1,11 +1,13 @@
 import streamlit as st
-from ottobot_init import create_new_ottobot_with_files
+from ottobot import get_ottobot_with_vectore_store, load_thread_assign_to_assistant
+
+thread_id = None
 
 def main():
     st.title("Continuous Chat with History")
 
     # Initialize simplest ottobot
-    ottobot = create_new_ottobot_with_files("ottobotV2", [
+    ottobot = get_ottobot_with_vectore_store("ottobotV2", [
         "docs/CALCULATOR A.M. Nutrition & Lifestyle Protocol Data Sources.pdf",
         "docs/MACROS A.M. Nutrition & Lifestyle Protocol Data Sources.pdf",
         "docs/MACROS Mark Ottobre Master File Data Sources.pdf",
@@ -24,6 +26,14 @@ def main():
     # Chat UI
     st.subheader("Chat with Your Knowledge Base")
     user_question = st.text_input("Ask a question:", "")
+
+    st.sidebar.header("Manage Threads")
+    st.sidebar.caption("Create a new thread or load an existing thread")
+    # Sidebar for Thread ID
+    with st.sidebar:
+        thread_id = st.text_input("Thread ID:", key="thread_id")
+        if st.button("Load Thread"):
+            thread_id = load_thread_assign_to_assistant(thread_id, ottobot.id)
 
     if st.button("Send"):
         if user_question.strip():
