@@ -215,12 +215,11 @@ def delete_message_from_thread(thread_id, message_id):
         print(f"Error deleting message from thread: {e}")
         return None
 
-def run_assistant(assistant_id, thread_id, message):
+def run_assistant(assistant_id, thread_id):
     try:
         run = openaiClient.beta.threads.runs.create(
             thread_id=thread_id,
             assistant_id=assistant_id,
-            instructions=message,
             stream=True
         )
         return run

@@ -1,10 +1,11 @@
 import streamlit as st
-from ottobot import get_ottobot_with_vectore_store, load_thread_messages
+import json
+from ottobot import get_ottobot_with_vectore_store, load_thread_messages, run_new_thread_submit_message
 
 thread_id = None
 
 def main():
-    st.title("Continuous Chat with History")
+    st.title("Ask Mark Ottobre 💪")
     # Initialize chat history in session state if it doesn't exist
     if "chat_history" not in st.session_state:
         st.session_state["chat_history"] = []
@@ -27,7 +28,7 @@ def main():
     ])
 
     # Chat UI
-    st.subheader("Chat with Your Knowledge Base")
+    st.subheader("All the information you need to take your training to the next level")
     user_question = st.text_input("Ask a question:", "")
 
     # Sidebar for Thread ID
@@ -48,11 +49,41 @@ def main():
     if st.button("Send"):
         if user_question.strip():
             with st.spinner("Generating response..."):
-                response = ottobot.run(user_question)
-                st.session_state["chat_history"].append((user_question, response))
+                message_placeholder = st.empty()
+                full_response = ""
 
-    # Display chat history
-    st.subheader("Ask Mark Ottobre 💪")
+                response = run_new_thread_submit_message(ottobot.id, user_question)
+                print(f"\n\n")
+                for chunk in response:
+
+                    if hasattr(chunk, 'event') and chunk.event == 'thread.message.delta':
+                        try:
+                            print("Object variables:", vars(chunk), end="\n\n")
+                        except:
+                            print("vars() not available for this object")
+                        
+                        # Extract the new text
+                        if hasattr(chunk, 'data') and hasattr(chunk.data, 'delta'):
+                            new_text = chunk.data.delta.content[0].text.value
+                            full_response += new_text
+
+                message_placeholder.markdown(full_response)
+                
+                # Once streaming is complete, add to chat history
+                if full_response:
+                    st.session_state["chat_history"].append((user_question, full_response))
+
+                # # If it's bytes, decode it to string and parse JSON
+                # if isinstance(response_data, bytes):
+                #     import json
+                #     response_json = json.loads(response_data.decode('utf-8'))
+                # else:
+                #     response_json = response_data
+
+                # # Now you can access the data
+                # text = response_json.delta.content[0].text.value
+                # print(text)
+                # st.session_state["chat_history"].append((user_question, text))
 
     # Move the CSS to a separate component using st.markdown
     st.markdown("""
