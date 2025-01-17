@@ -78,7 +78,7 @@ def retrieve_vector_store(vectorstore_id):
 
 def upload_vector_store_files_batch(vectorstore_id, file_paths):
     vector_store = retrieve_vector_store(vectorstore_id)
-    if vector_store.file_count > 0:
+    if vector_store and vector_store.file_counts.total > 0:
         return vector_store
 
     file_ids = []
