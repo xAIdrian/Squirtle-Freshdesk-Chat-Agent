@@ -1,10 +1,13 @@
 import streamlit as st
-from ottobot import get_ottobot_with_vectore_store, load_thread_assign_to_assistant
+from ottobot import get_ottobot_with_vectore_store, load_thread_messages
 
 thread_id = None
 
 def main():
     st.title("Continuous Chat with History")
+    # Initialize chat history in session state if it doesn't exist
+    if "chat_history" not in st.session_state:
+        st.session_state["chat_history"] = []
 
     # Initialize simplest ottobot
     ottobot = get_ottobot_with_vectore_store("ottobotV2", [
@@ -27,13 +30,20 @@ def main():
     st.subheader("Chat with Your Knowledge Base")
     user_question = st.text_input("Ask a question:", "")
 
+    # Sidebar for Thread ID
     st.sidebar.header("Manage Threads")
     st.sidebar.caption("Create a new thread or load an existing thread")
-    # Sidebar for Thread ID
+
     with st.sidebar:
         thread_id = st.text_input("Thread ID:", key="thread_id")
         if st.button("Load Thread"):
-            thread_id = load_thread_assign_to_assistant(thread_id, ottobot.id)
+            messages = load_thread_messages(thread_id)
+
+            if messages is None:
+                st.sidebar.error("Thread not found. Please start a new conversation.")
+            else:
+                for message in messages:
+                    st.session_state["chat_history"].append((message.content[0].text.value, ""))
 
     if st.button("Send"):
         if user_question.strip():
@@ -42,7 +52,7 @@ def main():
                 st.session_state["chat_history"].append((user_question, response))
 
     # Display chat history
-    st.subheader("Conversation History")
+    st.subheader("Ask Mark Ottobre 💪")
 
     # Move the CSS to a separate component using st.markdown
     st.markdown("""
@@ -74,12 +84,12 @@ def main():
     """, unsafe_allow_html=True)
 
     # Display each message separately
-    # if st.session_state["chat_history"]:
-    #     for question, answer in st.session_state["chat_history"]:
-    #         st.markdown(f'<div class="chat-bubble user-bubble" style="text-align: right">{question}</div>', unsafe_allow_html=True)
-    #         st.markdown(f'<div class="chat-bubble ai-bubble">{answer}</div>', unsafe_allow_html=True)
-    # else:
-    #     st.info("Start a conversation by asking a question.")
+    if st.session_state["chat_history"]:
+        for question, answer in st.session_state["chat_history"]:
+            st.markdown(f'<div class="chat-bubble user-bubble" style="text-align: right">{question}</div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="chat-bubble ai-bubble">{answer}</div>', unsafe_allow_html=True)
+    else:
+        st.info("Start a conversation by asking a question.")
 
 if __name__ == "__main__":
     main()

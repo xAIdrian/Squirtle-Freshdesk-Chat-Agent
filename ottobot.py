@@ -1,5 +1,5 @@
 from openai import OpenAI
-from ottobot_core import list_assistants, create_assistant, retrieve_assistant, get_or_create_vector_store, create_thread, retrieve_thread, upload_vector_store_files_batch
+from ottobot_core import list_assistants, create_assistant, retrieve_assistant, get_or_create_vector_store, create_thread, retrieve_thread, upload_vector_store_files_batch, list_messages_in_thread
 
 def create_new_assistant_if_not_exists(name):
     assistants = list_assistants()
@@ -36,10 +36,13 @@ def get_ottobot_with_vectore_store(name, files):
     upload_vector_store_files_batch(vector_store.id, files)
     return assistant
 
-def load_thread_assign_to_assistant(thread_id, assistant_id):
+def load_thread_messages(thread_id):
     if thread_id:
         thread = retrieve_thread(thread_id)
-    else:
-        thread = create_thread()
-    assistant = retrieve_assistant(assistant_id)
-    return thread, assistant
+        if thread:
+            print(f"Loaded thread: {thread}")
+            return list_messages_in_thread(thread_id)
+        else:
+            print(f"Thread {thread_id} not found")
+    
+    return None

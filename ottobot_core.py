@@ -1,18 +1,25 @@
 from openai import OpenAI
-from typing_extensions import override
-from openai import AssistantEventHandler
 import streamlit as st
+
 openaiClient = OpenAI(
     api_key=st.secrets["OPENAI_API_KEY"]
 )
 
 def retrieve_assistant(assistant_id):
-    return openaiClient.beta.assistants.retrieve(assistant_id)
+    try:
+        return openaiClient.beta.assistants.retrieve(assistant_id)
+    except Exception as e:
+        print(f"Error retrieving assistant: {e}")
+        return None
 
 def list_assistants():
-    assistants = openaiClient.beta.assistants.list()
-    print(f"Assistants: {assistants}")
-    return assistants
+    try:
+        assistants = openaiClient.beta.assistants.list()
+        print(f"Assistants: {assistants}")
+        return assistants
+    except Exception as e:
+        print(f"Error listing assistants: {e}")
+        return None
 
 def create_assistant(name, instructions, tools, model):
     try:
@@ -29,22 +36,30 @@ def create_assistant(name, instructions, tools, model):
         return None
     
 def create_vector_store_file(vectorstore_id, file_path):
-    vector_store_file = openaiClient.beta.vector_stores.files.create(
-        vector_store_id=vectorstore_id,
-        file_id=file_path
-    )
-    return vector_store_file
+    try:
+        vector_store_file = openaiClient.beta.vector_stores.files.create(
+            vector_store_id=vectorstore_id,
+            file_id=file_path
+        )
+        return vector_store_file
+    except Exception as e:
+        print(f"Error creating vector store file: {e}")
+        return None
 
 def upload_vector_store_files_batch(vectorstore_id, file_paths):
-    file_ids = []
-    for file_path in file_paths:
-        file_ids.append(create_vector_store_file(vectorstore_id, file_path).id)
+    try:
+        file_ids = []
+        for file_path in file_paths:
+            file_ids.append(create_vector_store_file(vectorstore_id, file_path).id)
 
-    vector_store_file_batch = openaiClient.beta.vector_stores.file_batches.create(
-        vector_store_id=vectorstore_id,
-        file_ids=file_ids
-    )
-    return vector_store_file_batch
+        vector_store_file_batch = openaiClient.beta.vector_stores.file_batches.create(
+            vector_store_id=vectorstore_id,
+            file_ids=file_ids
+        )
+        return vector_store_file_batch
+    except Exception as e:
+        print(f"Error uploading vector store files batch: {e}")
+        return None
 
 def get_or_create_vector_store(assistant_id):
     """Retrieve or create the vector store for the assistant."""
@@ -74,7 +89,11 @@ def get_or_create_vector_store(assistant_id):
         return None
 
 def retrieve_vector_store(vectorstore_id):
-    return openaiClient.beta.vector_stores.retrieve(vector_store_id=vectorstore_id)
+    try:
+        return openaiClient.beta.vector_stores.retrieve(vector_store_id=vectorstore_id)
+    except Exception as e:
+        print(f"Error retrieving vector store: {e}")
+        return None
 
 def upload_vector_store_files_batch(vectorstore_id, file_paths):
     vector_store = retrieve_vector_store(vectorstore_id)
@@ -145,45 +164,79 @@ def create_thread():
     return thread
 
 def retrieve_thread(thread_id):
-    thread = openaiClient.beta.threads.retrieve(thread_id)
-    return thread
+    try:
+        thread = openaiClient.beta.threads.retrieve(thread_id)
+        return thread
+    except Exception as e:
+        print(f"Error retrieving thread: {e}")
+        return None
 
 def delete_thread(thread_id):
-    openaiClient.beta.threads.delete(thread_id)
-    return thread_id
+    try:
+        openaiClient.beta.threads.delete(thread_id)
+        return thread_id
+    except Exception as e:
+        print(f"Error deleting thread: {e}")
+        return None
 
 def add_message_to_thread(thread_id, message):
-    openaiClient.beta.threads.messages.create(
-        thread_id=thread_id,
-        role="user",
-        content=message
-    )
+    try:
+        openaiClient.beta.threads.messages.create(
+            thread_id=thread_id,
+            role="user",
+            content=message
+        )
+        return message
+    except Exception as e:
+        print(f"Error adding message to thread: {e}")
+        return None
 
 def list_messages_in_thread(thread_id):
-    messages = openaiClient.beta.threads.messages.list(thread_id)
-    return messages
+    try:
+        messages = openaiClient.beta.threads.messages.list(thread_id)
+        return messages
+    except Exception as e:
+        print(f"Error listing messages in thread: {e}")
+        return None
 
-def retrieve_message_from_thread(thread_id, message_id):
-    message = openaiClient.beta.threads.messages.retrieve(thread_id, message_id)
-    return message
+def retrieve_single_message_from_thread(thread_id, message_id):
+    try:
+        message = openaiClient.beta.threads.messages.retrieve(thread_id, message_id)
+        return message
+    except Exception as e:
+        print(f"Error retrieving message from thread: {e}")
+        return None
 
 def delete_message_from_thread(thread_id, message_id):
-    openaiClient.beta.threads.messages.delete(thread_id, message_id)
-    return message_id
+    try:
+        openaiClient.beta.threads.messages.delete(thread_id, message_id)
+        return message_id
+    except Exception as e:
+        print(f"Error deleting message from thread: {e}")
+        return None
 
 def run_assistant(assistant_id, thread_id, message):
-    run = openaiClient.beta.threads.runs.create(
-        thread_id=thread_id,
-        assistant_id=assistant_id,
-        instructions=message,
-        stream=True
-    )
-    return run
+    try:
+        run = openaiClient.beta.threads.runs.create(
+            thread_id=thread_id,
+            assistant_id=assistant_id,
+            instructions=message,
+            stream=True
+        )
+        return run
+    except Exception as e:
+        print(f"Error running assistant: {e}")
+        return None
 
 def create_thread_and_run_assistant(assistant_id, message):
-    run = openaiClient.beta.threads.create_and_run(
-        assistant_id=assistant_id,
-        instructions=message,
-        stream=True
-    )
-    return run
+    try:
+        run = openaiClient.beta.threads.create_and_run(
+            assistant_id=assistant_id,
+            instructions=message,
+            stream=True
+        )
+        return run
+    except Exception as e:
+        print(f"Error creating thread and running assistant: {e}")
+        return None
+
