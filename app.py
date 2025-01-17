@@ -49,13 +49,8 @@ def main():
     if st.button("Send"):
         if user_question.strip():
             with st.spinner("Generating response..."):
-                message_placeholder = st.empty()
-                full_response = ""
-
                 response = run_new_thread_submit_message(ottobot.id, user_question)
-                print(f"\n\n")
                 for chunk in response:
-
                     if hasattr(chunk, 'event') and chunk.event == 'thread.message.delta':
                         try:
                             print("Object variables:", vars(chunk), end="\n\n")
@@ -66,8 +61,6 @@ def main():
                         if hasattr(chunk, 'data') and hasattr(chunk.data, 'delta'):
                             new_text = chunk.data.delta.content[0].text.value
                             full_response += new_text
-
-                message_placeholder.markdown(full_response)
                 
                 # Once streaming is complete, add to chat history
                 if full_response:
