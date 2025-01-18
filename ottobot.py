@@ -18,7 +18,6 @@ def create_new_assistant_if_not_exists(name):
         print(f"Assistant {name} does not exist, creating new one")
         return create_assistant(
             name=name,
-            instructions="ottobot",
             tools=[
                 {
                     "type": "file_search"

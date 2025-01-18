@@ -1,6 +1,6 @@
 from openai import OpenAI
 import streamlit as st
-
+from consts import INSTRUCTIONS
 openaiClient = OpenAI(
     api_key=st.secrets["OPENAI_API_KEY"]
 )
@@ -9,30 +9,30 @@ def retrieve_assistant(assistant_id):
     try:
         return openaiClient.beta.assistants.retrieve(assistant_id)
     except Exception as e:
-        print(f"Error retrieving assistant: {e}")
+        print('🚀 ~ file: ottobot_core.py:12 ~ e:', e);
         return None
 
 def list_assistants():
     try:
         assistants = openaiClient.beta.assistants.list()
-        print(f"Assistants: {assistants}")
+        print('🚀 ~ file: ottobot_core.py:15 ~ assistants:', assistants);
         return assistants
     except Exception as e:
-        print(f"Error listing assistants: {e}")
+        print('🚀 ~ file: ottobot_core.py:17 ~ e:', e);
         return None
 
-def create_assistant(name, instructions, tools, model):
+def create_assistant(name, tools, model):
     try:
       assistant = openaiClient.beta.assistants.create(
           name=name,
-          instructions=instructions,
+          instructions=INSTRUCTIONS,
           tools=tools,
           model=model,
       )
-      print(f"Assistant created: {assistant}")
+      print('🚀 ~ file: ottobot_core.py:26 ~ assistant:', assistant);
       return assistant
     except Exception as e:
-        print(f"Error creating assistant: {e}")
+        print('🚀 ~ file: ottobot_core.py:28 ~ e:', e);
         return None
     
 def create_vector_store_file(vectorstore_id, file_path):
@@ -43,7 +43,7 @@ def create_vector_store_file(vectorstore_id, file_path):
         )
         return vector_store_file
     except Exception as e:
-        print(f"Error creating vector store file: {e}")
+        print('🚀 ~ file: ottobot_core.py:32 ~ e:', e);
         return None
 
 def upload_vector_store_files_batch(vectorstore_id, file_paths):
@@ -58,7 +58,7 @@ def upload_vector_store_files_batch(vectorstore_id, file_paths):
         )
         return vector_store_file_batch
     except Exception as e:
-        print(f"Error uploading vector store files batch: {e}")
+        print('🚀 ~ file: ottobot_core.py:46 ~ e:', e);
         return None
 
 def get_or_create_vector_store(assistant_id):
@@ -67,38 +67,46 @@ def get_or_create_vector_store(assistant_id):
         assistant = openaiClient.beta.assistants.retrieve(assistant_id)
 
         # Check if vector store already exists
-        first_vector_store_id = assistant.tool_resources.file_search.vector_store_ids[0]
-        if first_vector_store_id:
-            print(f"Vector store already exists: {first_vector_store_id}")
-            return openaiClient.beta.vector_stores.retrieve(vector_store_id=first_vector_store_id)
+        if assistant.tool_resources.file_search.vector_store_ids:
+            first_vector_store_id = assistant.tool_resources.file_search.vector_store_ids[0]
+            if first_vector_store_id:
+                print('🚀 ~ file: ottobot_core.py:61 ~ first_vector_store_id:', first_vector_store_id);
+                return openaiClient.beta.vector_stores.retrieve(vector_store_id=first_vector_store_id)
 
         # Create a new vector store
         vector_store = openaiClient.beta.vector_stores.create(name="ottobot-vector-store")
-        print(f"Vector store created: {vector_store}")
+        print('🚀 ~ file: ottobot_core.py:65 ~ vector_store:', vector_store);
+
         openaiClient.beta.assistants.update(
             assistant_id, 
             tool_resources={
                 "file_search": {"vector_store_ids": [vector_store.id]}
             }
         )
-        print(f"Assistant updated with vector store: {assistant}")
+        print('🚀 ~ file: ottobot_core.py:78 ~ assistant:', assistant);
 
         return vector_store
     except Exception as e:
-        print(f"Error retrieving assistant: {e}")
+        print('🚀 ~ file: ottobot_core.py:86 ~ e:', e);
         return None
 
 def retrieve_vector_store(vectorstore_id):
     try:
-        return openaiClient.beta.vector_stores.retrieve(vector_store_id=vectorstore_id)
+        vector_store = openaiClient.beta.vector_stores.retrieve(vector_store_id=vectorstore_id)
+        print('🚀 ~ file: ottobot_core.py:96 ~ vector_store:', vector_store);
+        return vector_store
     except Exception as e:
-        print(f"Error retrieving vector store: {e}")
+        print('🚀 ~ file: ottobot_core.py:99 ~ e:', e);
         return None
 
 def upload_vector_store_files_batch(vectorstore_id, file_paths):
     vector_store = retrieve_vector_store(vectorstore_id)
-    if vector_store and vector_store.file_counts.total > 0:
-        return vector_store
+    if not vector_store or not vector_store.file_counts:
+        print('🚀 ~ file: ottobot_core.py:103 ~ vector_store:', vector_store);
+        return None
+    if vector_store.file_counts.total > 0:
+        print('🚀 ~ file: ottobot_core.py:103 ~ vector_store:', vector_store);
+        return None
 
     file_ids = []
     for file_path in file_paths:
@@ -116,29 +124,31 @@ def upload_vector_store_files_batch(vectorstore_id, file_paths):
                 file_id=uploaded_file.id
             )
             file_ids.append(vector_store_file.id)
+            print('🚀 ~ file: ottobot_core.py:127 ~ file_ids:', file_ids);
         except FileNotFoundError:
-            print(f"File not found: {file_path}")
+            print('🚀 ~ file: ottobot_core.py:129 ~ FileNotFoundError:', FileNotFoundError);
         except Exception as e:
-            print(f"Error processing file {file_path}: {e}")
+            print('🚀 ~ file: ottobot_core.py:131 ~ e:', e);
 
     if not file_ids:
+        print('🚀 ~ file: ottobot_core.py:135 ~ No files uploaded');
         return None
 
     vector_store_file_batch = openaiClient.beta.vector_stores.file_batches.create(
         vector_store_id=vectorstore_id,
         file_ids=file_ids
     )
-    print(f"Vector store file batch created: {vector_store_file_batch}")
+    print('🚀 ~ file: ottobot_core.py:141 ~ vector_store_file_batch:', vector_store_file_batch);
     return vector_store_file_batch
 
 def delete_file_from_vector_store(assistant_id, file_id):
     try:
         vector_store_id = get_or_create_vector_store(assistant_id)
         openaiClient.beta.vector_stores.files.delete(vector_store_id, file_id)
-        print(f"File deleted from vector store successfully! File ID: {file_id}")
+        print('🚀 ~ file: ottobot_core.py:148 ~ file_id:', file_id);
         return file_id
     except Exception as e:
-        print(f"Error deleting file: {e}")
+        print('🚀 ~ file: ottobot_core.py:150 ~ e:', e);
         return None
 
 def list_files_in_vector_store(assistant_id):
@@ -176,7 +186,7 @@ def delete_thread(thread_id):
         openaiClient.beta.threads.delete(thread_id)
         return thread_id
     except Exception as e:
-        print(f"Error deleting thread: {e}")
+        print('🚀 ~ file: ottobot_core.py:189 ~ e:', e);
         return None
 
 def add_message_to_thread(thread_id, message):
@@ -188,7 +198,7 @@ def add_message_to_thread(thread_id, message):
         )
         return message
     except Exception as e:
-        print(f"Error adding message to thread: {e}")
+        print('🚀 ~ file: ottobot_core.py:201 ~ e:', e);
         return None
 
 def list_messages_in_thread(thread_id):
@@ -196,7 +206,7 @@ def list_messages_in_thread(thread_id):
         messages = openaiClient.beta.threads.messages.list(thread_id)
         return messages
     except Exception as e:
-        print(f"Error listing messages in thread: {e}")
+        print('🚀 ~ file: ottobot_core.py:209 ~ e:', e);
         return None
 
 def retrieve_single_message_from_thread(thread_id, message_id):
@@ -204,7 +214,7 @@ def retrieve_single_message_from_thread(thread_id, message_id):
         message = openaiClient.beta.threads.messages.retrieve(thread_id, message_id)
         return message
     except Exception as e:
-        print(f"Error retrieving message from thread: {e}")
+        print('🚀 ~ file: ottobot_core.py:217 ~ e:', e);
         return None
 
 def delete_message_from_thread(thread_id, message_id):
@@ -212,7 +222,7 @@ def delete_message_from_thread(thread_id, message_id):
         openaiClient.beta.threads.messages.delete(thread_id, message_id)
         return message_id
     except Exception as e:
-        print(f"Error deleting message from thread: {e}")
+        print('🚀 ~ file: ottobot_core.py:225 ~ e:', e);
         return None
 
 def run_assistant(assistant_id, thread_id):
@@ -224,7 +234,7 @@ def run_assistant(assistant_id, thread_id):
         )
         return run
     except Exception as e:
-        print(f"Error running assistant: {e}")
+        print('🚀 ~ file: ottobot_core.py:237 ~ e:', e);
         return None
 
 def create_thread_and_run_assistant(assistant_id, message):
@@ -236,6 +246,6 @@ def create_thread_and_run_assistant(assistant_id, message):
         )
         return run
     except Exception as e:
-        print(f"Error creating thread and running assistant: {e}")
+        print('🚀 ~ file: ottobot_core.py:249 ~ e:', e);
         return None
 

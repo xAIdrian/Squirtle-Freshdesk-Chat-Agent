@@ -11,7 +11,7 @@ def main():
         st.session_state["chat_history"] = []
 
     # Initialize simplest ottobot
-    ottobot = get_ottobot_with_vectore_store("ottobotV2", [
+    ottobot = get_ottobot_with_vectore_store("ottobotV3", [
         "docs/CALCULATOR A.M. Nutrition & Lifestyle Protocol Data Sources.pdf",
         "docs/MACROS A.M. Nutrition & Lifestyle Protocol Data Sources.pdf",
         "docs/MACROS Mark Ottobre Master File Data Sources.pdf",
@@ -49,11 +49,6 @@ def main():
                 response = run_new_thread_submit_message(ottobot.id, user_question)
                 for chunk in response:
                     if hasattr(chunk, 'event') and chunk.event == 'thread.message.delta':
-                        try:
-                            print("Object variables:", vars(chunk), end="\n\n")
-                        except:
-                            print("vars() not available for this object")
-                        
                         if hasattr(chunk, 'data') and hasattr(chunk.data, 'delta'):
                             new_text = chunk.data.delta.content[0].text.value
                             full_response += new_text
@@ -95,7 +90,7 @@ def main():
 
         for question, answer in st.session_state["chat_history"]:
             st.markdown(f'<div class="chat-bubble user-bubble">{question}</div>', unsafe_allow_html=True)
-            st.markdown(f'<div class="chat-bubble ai-bubble" style="text-align: right">{answer}</div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="chat-bubble ai-bubble">{answer}</div>', unsafe_allow_html=True)
     else:
         st.info("Start a conversation by asking a question.")
 
