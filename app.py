@@ -31,22 +31,19 @@ def main():
     st.subheader("All the information you need to take your training to the next level")
     user_question = st.text_input("Ask a question:", "")
 
-    # Sidebar for Thread ID
-    st.sidebar.header("Manage Threads")
-    st.sidebar.caption("Create a new thread or load an existing thread")
-
     with st.sidebar:
-        thread_id = st.text_input("Thread ID:", key="thread_id")
-        if st.button("Load Thread"):
-            messages = load_thread_messages(thread_id)
-
-            if messages is None:
-                st.sidebar.error("Thread not found. Please start a new conversation.")
-            else:
-                for message in messages:
-                    st.session_state["chat_history"].append((message.content[0].text.value, ""))
+        st.header("Welcome to Mark's AI Assistant")
+        st.caption("Your personal guide to Enterprise Fitness knowledge")
+        if st.button("Learn More"):
+            st.markdown("""
+                This AI assistant has been trained on Mark Ottobre's extensive fitness and nutrition knowledge.
+                Ask questions about training, nutrition, and Enterprise Fitness methodologies to get detailed,
+                accurate responses drawn directly from Mark's materials.
+            """)
 
     if st.button("Send"):
+        full_response = ""
+
         if user_question.strip():
             with st.spinner("Generating response..."):
                 response = run_new_thread_submit_message(ottobot.id, user_question)
@@ -57,7 +54,6 @@ def main():
                         except:
                             print("vars() not available for this object")
                         
-                        # Extract the new text
                         if hasattr(chunk, 'data') and hasattr(chunk.data, 'delta'):
                             new_text = chunk.data.delta.content[0].text.value
                             full_response += new_text
@@ -66,19 +62,6 @@ def main():
                 if full_response:
                     st.session_state["chat_history"].append((user_question, full_response))
 
-                # # If it's bytes, decode it to string and parse JSON
-                # if isinstance(response_data, bytes):
-                #     import json
-                #     response_json = json.loads(response_data.decode('utf-8'))
-                # else:
-                #     response_json = response_data
-
-                # # Now you can access the data
-                # text = response_json.delta.content[0].text.value
-                # print(text)
-                # st.session_state["chat_history"].append((user_question, text))
-
-    # Move the CSS to a separate component using st.markdown
     st.markdown("""
         <style>
         .chat-container {
@@ -109,9 +92,10 @@ def main():
 
     # Display each message separately
     if st.session_state["chat_history"]:
+
         for question, answer in st.session_state["chat_history"]:
-            st.markdown(f'<div class="chat-bubble user-bubble" style="text-align: right">{question}</div>', unsafe_allow_html=True)
-            st.markdown(f'<div class="chat-bubble ai-bubble">{answer}</div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="chat-bubble user-bubble">{question}</div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="chat-bubble ai-bubble" style="text-align: right">{answer}</div>', unsafe_allow_html=True)
     else:
         st.info("Start a conversation by asking a question.")
 
