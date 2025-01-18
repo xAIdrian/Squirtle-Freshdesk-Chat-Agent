@@ -13,5 +13,5 @@ openai_api_key = "sk-your-actual-api-key-here"
 ```
 You can then access the secret in your code using:
 ```
-openai.api_key = st.secrets["openai_api_key"]
+openai_api_key = st.secrets["openai_api_key"]
 ```

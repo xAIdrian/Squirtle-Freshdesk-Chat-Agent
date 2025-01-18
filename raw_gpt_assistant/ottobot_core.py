@@ -1,6 +1,7 @@
 from openai import OpenAI
 import streamlit as st
-from consts import INSTRUCTIONS
+from consts import INSTRUCTIONS, PRE_PROMPT
+
 openaiClient = OpenAI(
     api_key=st.secrets["OPENAI_API_KEY"]
 )
@@ -241,7 +242,7 @@ def create_thread_and_run_assistant(assistant_id, message):
     try:
         run = openaiClient.beta.threads.create_and_run(
             assistant_id=assistant_id,
-            instructions=message,
+            instructions=PRE_PROMPT + message,
             stream=True
         )
         return run

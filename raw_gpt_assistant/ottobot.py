@@ -50,3 +50,6 @@ def run_new_thread_submit_message(assistant_id, message):
     data = create_thread_and_run_assistant(assistant_id, message)
     return data
 
+def add_message_to_conversation(thread_id, message):
+    data = add_message_to_thread(thread_id, message)
+    return data

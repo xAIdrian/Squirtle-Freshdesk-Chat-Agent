@@ -1,6 +1,8 @@
 import streamlit as st
 import json
-from ottobot import get_ottobot_with_vectore_store, load_thread_messages, run_new_thread_submit_message
+from ottobot import get_ottobot_with_vectore_store, \
+    run_new_thread_submit_message, \
+    add_message_to_conversation
 
 thread_id = None
 
@@ -56,6 +58,7 @@ def main():
                 # Once streaming is complete, add to chat history
                 if full_response:
                     st.session_state["chat_history"].append((user_question, full_response))
+                    add_message_to_conversation(thread_id, full_response)
 
     st.markdown("""
         <style>
