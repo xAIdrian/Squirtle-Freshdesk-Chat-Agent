@@ -10,10 +10,14 @@ from langchain.callbacks.base import BaseCallbackHandler
 from langchain.chains import ConversationalRetrievalChain
 from langchain.vectorstores import DocArrayInMemorySearch
 from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_core.messages import SystemMessage, HumanMessage
+from consts import SYSTEM_PROMPT
 
-st.set_page_config(page_title="Train with Mark", page_icon="🏆")
+st.set_page_config(page_title="Ottobot", page_icon="🏆")
+
+if st.button("Clear message history", key="clear_button"):
+    st.session_state.clear_messages = True
 st.title("💪 Train with Mark Ottobre")
-
 
 @st.cache_resource(ttl="1h")
 def configure_retriever(_uploaded_files):
@@ -39,7 +43,6 @@ def configure_retriever(_uploaded_files):
     retriever = vectordb.as_retriever(search_type="mmr", search_kwargs={"k": 2, "fetch_k": 4})
 
     return retriever
-
 
 class StreamHandler(BaseCallbackHandler):
     def __init__(self, container: st.delta_generator.DeltaGenerator, initial_text: str = ""):
@@ -74,43 +77,51 @@ class PrintRetrievalHandler(BaseCallbackHandler):
             self.status.markdown(doc.page_content)
         self.status.update(state="complete")
 
-# Track uploaded files in session state to persist across reruns
-pdf_directory = "./docs/"  
-static_files = []
-for filename in os.listdir(pdf_directory):
-    if filename.endswith('.pdf'):
-        file_path = os.path.join(pdf_directory, filename)
-
-        # Create a simple class to mimic UploadedFile interface
-        class StaticFile:
-            def __init__(self, path):
-                self.name = os.path.basename(path)
-                self._path = path
-            
-            def getvalue(self):
-                with open(self._path, 'rb') as f:
-                    return f.read()
+# Create a simple class to mimic UploadedFile interface
+class StaticFile:
+    def __init__(self, path):
+        self.name = os.path.basename(path)
+        self._path = path
+    
+    def getvalue(self):
+        with open(self._path, 'rb') as f:
+            return f.read()
         
-        print('🚀 ~ file: chat_with_documents.py:99 ~ read:', file_path);
-        static_files.append(StaticFile(file_path))
+# Track uploaded files in session state to persist across reruns
+if "static_files" not in st.session_state:
+    st.session_state.static_files = []
+    pdf_directory = "./docs/"  
+    for filename in os.listdir(pdf_directory):
+        if filename.endswith('.pdf'):
+            file_path = os.path.join(pdf_directory, filename)
+            static_file = StaticFile(file_path)
+            st.session_state.static_files.append(static_file)
 
-retriever = configure_retriever(static_files)
+if 'retriever' not in st.session_state:
+    st.session_state.retriever = configure_retriever(st.session_state.static_files)
+
+retriever = st.session_state.retriever
 
 # Setup memory for contextual conversation
 msgs = StreamlitChatMessageHistory()
+
 memory = ConversationBufferMemory(memory_key="chat_history", chat_memory=msgs, return_messages=True)
 
 # Setup LLM and QA chain
 llm = ChatOpenAI(
-    model_name="gpt-3.5-turbo", openai_api_key=st.secrets["OPENAI_API_KEY"], temperature=0, streaming=True
+    model_name="gpt-4o", 
+    openai_api_key=st.secrets["OPENAI_API_KEY"], 
+    temperature=0.8, 
+    streaming=True
 )
 qa_chain = ConversationalRetrievalChain.from_llm(
     llm, retriever=retriever, memory=memory, verbose=True
 )
 
-if len(msgs.messages) == 0 or st.sidebar.button("Clear message history"):
+if len(msgs.messages) == 0 or st.session_state.get('clear_messages', False):
     msgs.clear()
     msgs.add_ai_message("How can I help you?")
+    st.session_state.clear_messages = False
 
 avatars = {"human": "user", "ai": "assistant"}
 for msg in msgs.messages:
