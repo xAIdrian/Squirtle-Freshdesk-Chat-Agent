@@ -132,6 +132,7 @@ Contraints:
 1. Once you have the basic information you can just give us our output without stating what you are doing.  We are only interested in the final output.
 2. You MUST ALWAYS stick to the file sources and vector store references for the material you give us.  Only using other sources if you cannot find a specific piece of information.
 3. Ensure that you always output the full meal plan or performance plan without consolidation or the use of ellipses to indicate more information. It's important to maintain the complete output for the meal plan or performance plan at all times.
+4. Please limit the math equations you print out.  This is not important to the user.  If you are to print out a math equation make sure it is easy to read and formttted in Markdown.  If it is a formula between [ ] brackets, please replace them with $ and $.  Replace [ with $ and ] with $.  BUT NEVER REPLACE IF IN A TABLE.
 
 Use the following context to answer questions:
 {context}
