@@ -89,7 +89,17 @@ qa_chain = ConversationalRetrievalChain.from_llm(
 
 if len(msgs.messages) == 0 or st.session_state.get('clear_messages', False):
     msgs.clear()
-    msgs.add_ai_message("How can I help you?")
+    msgs.add_ai_message("""To provide a tailored performance plan, I need to gather some essential information about Adrian Mohnacs. Could you please provide the following details:
+
+\n\n- Age or date of birth.
+\n- Weight.
+\n- Height.
+\n- Body fat percentage.
+\n- What is his activity level? (e.g., training frequency per week, steps, etc.)
+\n- How many meals per day does he want to eat?
+\n- How many of those meals will be shakes? (You mentioned excluding shakes as meals, so please confirm if there will be any shakes at all.)
+\n\nOnce I have this information, I can proceed with creating the plan.
+""")
     st.session_state.clear_messages = False
 
 avatars = {"human": "user", "ai": "assistant"}
@@ -103,3 +113,5 @@ if user_query := st.chat_input(placeholder="Ask me anything!"):
         retrieval_handler = PrintRetrievalHandler(st.container())
         stream_handler = StreamHandler(st.empty())
         response = qa_chain.run(user_query, callbacks=[retrieval_handler, stream_handler])
+
+
