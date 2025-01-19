@@ -1,10 +1,7 @@
-venv/
 .streamlit/
 .vscode/
-docs/
 __pycache__/
 docs_agent/.streamlit/
-
 
 raw_gpt_assistant/venv/
 raw_gpt_assistant/.streamlit/
