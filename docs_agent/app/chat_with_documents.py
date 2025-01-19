@@ -13,6 +13,17 @@ from langchain.vectorstores import DocArrayInMemorySearch
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from consts import SYSTEM_TEMPLATE, HUMAN_TEMPLATE
 from handlers import PrintRetrievalHandler, StreamHandler, StaticFile
+import os
+
+# Get the directory of the current script
+script_dir = os.path.dirname(os.path.abspath(__file__))
+
+# Define the path to the 'docs' folder
+pdf_directory = os.path.join(script_dir, 'docs')
+
+# Check if the directory exists
+if not os.path.exists(pdf_directory):
+    print(f"Directory not found: {pdf_directory}")
 
 messages = [
     SystemMessagePromptTemplate.from_template(SYSTEM_TEMPLATE),
@@ -54,7 +65,6 @@ def configure_retriever(_uploaded_files):
 # Track uploaded files in session state to persist across reruns
 if "static_files" not in st.session_state:
     st.session_state.static_files = []
-    pdf_directory = "./docs/"  
     for filename in os.listdir(pdf_directory):
         if filename.endswith('.pdf'):
             file_path = os.path.join(pdf_directory, filename)
