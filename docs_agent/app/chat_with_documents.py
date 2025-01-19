@@ -36,6 +36,7 @@ st.set_page_config(page_title="Ottobot", page_icon="🏆")
 if st.button("Clear message history", key="clear_button"):
     st.session_state.clear_messages = True
 st.title("💪 Train with Mark Ottobre")
+st.write("If you need any additional information please ask your trainer in the studio or send us and email at info@enterprisefitness.com.au")
 
 @st.cache_resource(ttl="1h")
 def configure_retriever(_uploaded_files):
