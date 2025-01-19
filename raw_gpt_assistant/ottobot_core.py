@@ -1,6 +1,6 @@
 from openai import OpenAI
 import streamlit as st
-from docs_agent.consts import SYSTEM_PROMPT, PRE_PROMPT
+from app.consts import SYSTEM_TEMPLATE, PRE_PROMPT
 
 openaiClient = OpenAI(
     api_key=st.secrets["OPENAI_API_KEY"]
@@ -26,7 +26,7 @@ def create_assistant(name, tools, model):
     try:
       assistant = openaiClient.beta.assistants.create(
           name=name,
-          instructions=SYSTEM_PROMPT,
+          instructions=SYSTEM_TEMPLATE,
           tools=tools,
           model=model,
       )
