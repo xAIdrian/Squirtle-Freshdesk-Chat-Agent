@@ -4,8 +4,8 @@ venv/
 docs/
 __pycache__/
 docs_agent/.streamlit/
-docs_agent/docs/
-docs_agent/venv/
+
+
 raw_gpt_assistant/venv/
 raw_gpt_assistant/.streamlit/
 raw_gpt_assistant/docs/
