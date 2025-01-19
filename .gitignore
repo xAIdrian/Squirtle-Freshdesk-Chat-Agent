@@ -2,6 +2,7 @@
 .vscode/
 __pycache__/
 docs_agent/.streamlit/
+docs_agent/venv/
 
 raw_gpt_assistant/venv/
 raw_gpt_assistant/.streamlit/
