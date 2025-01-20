@@ -100,7 +100,7 @@ qa_chain = ConversationalRetrievalChain.from_llm(
 
 if len(msgs.messages) == 0 or st.session_state.get('clear_messages', False):
     msgs.clear()
-    msgs.add_ai_message("""To provide a tailored performance plan, I need to gather some essential information about Adrian Mohnacs. Could you please provide the following details:
+    msgs.add_ai_message("""To provide a tailored performance plan, I need to gather some essential information. Could you please provide the following details:
 
 \n\n- Age or date of birth.
 \n- Weight.
