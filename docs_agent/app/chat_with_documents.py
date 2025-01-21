@@ -38,7 +38,7 @@ if st.button("Clear message history", key="clear_button"):
 st.title("💪 Train with Mark Ottobre")
 st.caption("If you need any additional info please ask your trainer in the studio or send us an email at info@enterprisefitness.com.au")
 
-@st.cache_resource(ttl="1h")
+@st.cache_resource
 def configure_retriever(_uploaded_files):
     # Read documents
     docs = []
