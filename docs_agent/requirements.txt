@@ -1,0 +1,21 @@
+langchain
+openai
+pypdf
+sentence-transformers
+torch
+tabulate
+streamlit-feedback
+langchain-experimental
+streamlit
+docarray
+hnswlib
+langchain-community
+langchain-openai
+numexpr
+langchainhub
+langchain-openai
+
+# Dev dependencies
+black
+mypy
+pre-commit
