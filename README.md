@@ -15,3 +15,12 @@ You can then access the secret in your code using:
 ```
 openai_api_key = st.secrets["openai_api_key"]
 ```
+
+### Sure but how do we deploy the app?
+
+- Test in Streamlit Cloud (but this doesn't allow custom domain names)
+- Build, containerize, and deploy to Docker Hub
+- Test the Docker runs locally
+- Deploy docker to Google Cloud Run
+- Test the docker runs on Google Cloud Run
+- Set up a custom domain name
