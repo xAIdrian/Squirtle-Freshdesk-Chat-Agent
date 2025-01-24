@@ -13,8 +13,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy the application code
 COPY . .
 
-# Expose the port that Streamlit uses (default: 8501)
-EXPOSE 8501
+# Expose port 8080
+EXPOSE 8080
 
 # Command to run the Streamlit app
-CMD ["streamlit", "run", "app/chat_with_documents.py", "--server.port=8501", "--server.address=0.0.0.0"]
+CMD ["streamlit", "run", "app/chat_with_documents.py", "--server.port=8080", "--server.address=0.0.0.0"]
