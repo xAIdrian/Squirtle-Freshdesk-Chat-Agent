@@ -60,11 +60,16 @@ llm = ChatOpenAI(
     temperature=0.5, 
     streaming=True
 )
+
 qa_chain = RetrievalQA.from_chain_type(
     llm, 
     retriever=retriever, 
     verbose=True,
     chain_type="stuff",
+    chain_type_kwargs={
+        "prompt": qa_prompt,
+        "memory": memory
+    }
 )
 
 if len(msgs.messages) == 0 or st.session_state.get('clear_messages', False):
@@ -87,12 +92,18 @@ for msg in msgs.messages:
     st.chat_message(avatars[msg.type]).write(msg.content)
 
 if user_query := st.chat_input(placeholder="Ask me anything!"):
-    st.chat_message("user").write("" + user_query)
+    st.chat_message("user").write(user_query)
 
     doc = nlp(user_query)
-    user_query = ' '.join([token.text for token in doc if token.ent_type_ != 'PERSON'])
+    processed_query = ' '.join([token.text for token in doc if token.ent_type_ != 'PERSON'])
 
     with st.chat_message("assistant"):
         retrieval_handler = PrintRetrievalHandler(st.container())
         stream_handler = StreamHandler(st.empty())
-        response = qa_chain.run(user_query, callbacks=[retrieval_handler, stream_handler])
+        
+        # Use the correct input format for RetrievalQA
+        response = qa_chain({"query": processed_query}, callbacks=[retrieval_handler, stream_handler])
+        
+        # Extract the answer from the response
+        answer = response['result']
+        msgs.add_ai_message(answer)

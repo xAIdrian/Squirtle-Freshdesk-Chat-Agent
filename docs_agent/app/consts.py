@@ -166,4 +166,5 @@ Contraints:
 7. Always work through the whole process instead of saying "we will calculate his maintenance calories and macronutrient distribution."  Instead you will calculate his maintenance calories and macronutrient distribution.
 
 User Query: {question}
+
 """
