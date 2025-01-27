@@ -20,7 +20,6 @@ class StreamHandler(BaseCallbackHandler):
         self.text += token
         self.container.markdown(self.text)
 
-
 class PrintRetrievalHandler(BaseCallbackHandler):
     def __init__(self, container):
         self.status = container.status("**Context Retrieval**")
