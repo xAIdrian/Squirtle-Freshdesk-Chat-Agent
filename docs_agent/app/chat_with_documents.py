@@ -11,10 +11,12 @@ from langchain.callbacks.base import BaseCallbackHandler
 from langchain.chains import ConversationalRetrievalChain
 from langchain.vectorstores import DocArrayInMemorySearch
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from consts import SYSTEM_TEMPLATE, HUMAN_TEMPLATE, RETRIEVER_TEMPLATE
+from consts import SYSTEM_TEMPLATE, HUMAN_TEMPLATE
 from handlers import PrintRetrievalHandler, StreamHandler, StaticFile
 import os
 import spacy
+from retrievers import configure_retriever
+from langchain.chains import RetrievalQA
 
 nlp = spacy.load("en_core_web_sm")
 
@@ -29,7 +31,7 @@ if not os.path.exists(pdf_directory):
     print(f"Directory not found: {pdf_directory}")
 
 messages = [
-    SystemMessagePromptTemplate.from_template(RETRIEVER_TEMPLATE),
+    SystemMessagePromptTemplate.from_template(SYSTEM_TEMPLATE),
     HumanMessagePromptTemplate.from_template(HUMAN_TEMPLATE)
 ]
 qa_prompt = ChatPromptTemplate.from_messages(messages)
@@ -40,40 +42,6 @@ if st.button("Clear message history", key="clear_button"):
     st.session_state.clear_messages = True
 st.title("💪 Train with Mark Ottobre")
 st.caption("If you need any additional info please ask your trainer in the studio or send us an email at info@enterprisefitness.com.au")
-
-@st.cache_resource
-def configure_retriever(_uploaded_files):
-    # Read documents
-    docs = []
-    temp_dir = tempfile.TemporaryDirectory()
-    for file in _uploaded_files:
-        temp_filepath = os.path.join(temp_dir.name, file.name)
-        with open(temp_filepath, "wb") as f:
-            f.write(file.getvalue())
-        loader = PyPDFLoader(temp_filepath)
-        docs.extend(loader.load())
-
-    # Split documents
-    text_splitter = RecursiveCharacterTextSplitter(chunk_size=1500, chunk_overlap=200)
-    splits = text_splitter.split_documents(docs)
-
-    # Create embeddings and store in vectordb
-    embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
-    vectordb = DocArrayInMemorySearch.from_documents(splits, embeddings)
-
-    # Define retriever
-    retriever = vectordb.as_retriever(search_type="mmr", search_kwargs={"k": 2, "fetch_k": 4})
-
-    return retriever
-
-# Track uploaded files in session state to persist across reruns
-if "static_files" not in st.session_state:
-    st.session_state.static_files = []
-    for filename in os.listdir(pdf_directory):
-        if filename.endswith('.pdf'):
-            file_path = os.path.join(pdf_directory, filename)
-            static_file = StaticFile(file_path)
-            st.session_state.static_files.append(static_file)
 
 if 'retriever' not in st.session_state:
     st.session_state.retriever = configure_retriever(st.session_state.static_files)
@@ -92,12 +60,10 @@ llm = ChatOpenAI(
     temperature=0.5, 
     streaming=True
 )
-qa_chain = ConversationalRetrievalChain.from_llm(
+qa_chain = RetrievalQA.from_chain_type(
     llm, 
     retriever=retriever, 
-    memory=memory, 
     verbose=True,
-    combine_docs_chain_kwargs={"prompt": qa_prompt},
     chain_type="stuff",
 )
 
@@ -128,5 +94,5 @@ if user_query := st.chat_input(placeholder="Ask me anything!"):
 
     with st.chat_message("assistant"):
         retrieval_handler = PrintRetrievalHandler(st.container())
-        stream_handler = StreamHandler(st.empty())        
+        stream_handler = StreamHandler(st.empty())
         response = qa_chain.run(user_query, callbacks=[retrieval_handler, stream_handler])
