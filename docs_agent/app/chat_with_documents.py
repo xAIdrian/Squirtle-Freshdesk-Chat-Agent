@@ -1,22 +1,18 @@
-import os
-import tempfile
 import streamlit as st
-from langchain.prompts import SystemMessagePromptTemplate, HumanMessagePromptTemplate, ChatPromptTemplate
+from langchain.prompts import ChatPromptTemplate, PromptTemplate
 from langchain.chat_models import ChatOpenAI
 from langchain.document_loaders import PyPDFLoader
 from langchain.memory import ConversationBufferMemory
 from langchain.memory.chat_message_histories import StreamlitChatMessageHistory
-from langchain.embeddings import HuggingFaceEmbeddings
-from langchain.callbacks.base import BaseCallbackHandler
 from langchain.chains import ConversationalRetrievalChain
-from langchain.vectorstores import DocArrayInMemorySearch
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from consts import SYSTEM_TEMPLATE, HUMAN_TEMPLATE
-from handlers import PrintRetrievalHandler, StreamHandler, StaticFile
+from consts import SYSTEM_TEMPLATE, HUMAN_TEMPLATE, REPHRASE_PROMPT
+from handlers import PrintRetrievalHandler, StreamHandler
 import os
 import spacy
 from retrievers import configure_retriever
-from langchain.chains import RetrievalQA
+from langchain.chains import LLMChain
+from langchain.chains.combine_documents.stuff import StuffDocumentsChain
+
 
 nlp = spacy.load("en_core_web_sm")
 
@@ -44,23 +40,41 @@ retriever = st.session_state.retriever
 llm = ChatOpenAI(
     model_name="gpt-4o", 
     openai_api_key=st.secrets["OPENAI_API_KEY"], 
-    temperature=0.3, 
+    temperature=0.2, 
     streaming=True
 )
 
-prompt = ChatPromptTemplate.from_messages([
+combine_docs_prompt = ChatPromptTemplate.from_messages([
     ("system", SYSTEM_TEMPLATE),
     ("human", HUMAN_TEMPLATE),
 ])
 
-qa_chain = ConversationalRetrievalChain.from_llm(
+combine_docs_chain_llm = LLMChain(
     llm=llm,
-    retriever=retriever,
+    prompt=combine_docs_prompt
+)
+
+combine_docs_chain = StuffDocumentsChain(
+    llm_chain=combine_docs_chain_llm,
+    document_variable_name="context",
+    document_prompt=PromptTemplate(
+        input_variables=["page_content"],
+        template="{page_content}"
+    )
+)
+
+rephrase_prompt = PromptTemplate.from_template(REPHRASE_PROMPT)
+
+question_generator = LLMChain(
+    llm=llm,
+    prompt=rephrase_prompt
+)
+
+qa_chain = ConversationalRetrievalChain(
+    retriever=st.session_state.retriever,
+    combine_docs_chain=combine_docs_chain,
+    question_generator=question_generator,
     memory=memory,
-    combine_docs_chain_kwargs={
-        "prompt": prompt,
-        "document_variable_name": "context"
-    },
     return_source_documents=True,
     verbose=True
 )
