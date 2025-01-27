@@ -2,14 +2,15 @@ import os
 from langchain_core.callbacks import BaseCallbackHandler
 import streamlit as st
 
-
 class StreamHandler(BaseCallbackHandler):
     def __init__(self, container: st.delta_generator.DeltaGenerator, initial_text: str = ""):
         self.container = container
         self.text = initial_text
+        print('🚀 ~ file: handlers.py:24 ~ initial_text:', initial_text);
         self.run_id_ignore_token = None
 
     def on_llm_start(self, serialized: dict, prompts: list, **kwargs):
+        print('🚀 ~ file: handlers.py:27 ~ prompts:', prompts);
         # Workaround to prevent showing the rephrased question as output
         if prompts[0].startswith("Human"):
             self.run_id_ignore_token = kwargs.get("run_id")
@@ -19,7 +20,7 @@ class StreamHandler(BaseCallbackHandler):
             return
         self.text += token
         self.container.markdown(self.text)
-
+        
 class PrintRetrievalHandler(BaseCallbackHandler):
     def __init__(self, container):
         self.status = container.status("**Context Retrieval**")
@@ -34,6 +35,7 @@ class PrintRetrievalHandler(BaseCallbackHandler):
             self.status.write(f"**Document {idx} from {source}**")
             self.status.markdown(doc.page_content)
         self.status.update(state="complete")
+
 
 # Create a simple class to mimic UploadedFile interface
 class StaticFile:
