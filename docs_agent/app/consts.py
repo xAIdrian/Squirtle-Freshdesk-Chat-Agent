@@ -130,6 +130,7 @@ System Guide - Comprehensive guide outlining the system's processes and instruct
 HUMAN_TEMPLATE = """
 **This section drawas your attention to priorities of execution.  You will have several tasks that must be executed in order. **
 
+Instructions:
 0. You must first recognize which step the user is at based on the information from the chat histroy you have so far.  If the user has not provided any information, you will start by asking for their age, weight, height, body fat percentage, protein target, and number of meals per day.
 
 1. The user will start by giving you their age, weight, height, body fat percentage, protein target, and number of meals per day. This will be the first user input.
@@ -165,6 +166,5 @@ Contraints:
 6. If the input includes a proper noun or a person's name, please ignore it and do not try to find information about that person.
 7. Always work through the whole process instead of saying "we will calculate his maintenance calories and macronutrient distribution."  Instead you will calculate his maintenance calories and macronutrient distribution.
 
-User Query: {question}
-
+User Query to help us inm moving through the Instructions: {question}
 """

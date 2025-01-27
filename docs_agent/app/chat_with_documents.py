@@ -20,38 +20,25 @@ from langchain.chains import RetrievalQA
 
 nlp = spacy.load("en_core_web_sm")
 
-# Get the directory of the current script
-script_dir = os.path.dirname(os.path.abspath(__file__))
-
-# Define the path to the 'docs' folder
-pdf_directory = os.path.join(script_dir, 'docs')
-
-# Check if the directory exists
-if not os.path.exists(pdf_directory):
-    print(f"Directory not found: {pdf_directory}")
-
-messages = [
-    SystemMessagePromptTemplate.from_template(SYSTEM_TEMPLATE),
-    HumanMessagePromptTemplate.from_template(HUMAN_TEMPLATE)
-]
-qa_prompt = ChatPromptTemplate.from_messages(messages)
-
 st.set_page_config(page_title="Ottobot", page_icon="🏆")
-
 if st.button("Clear message history", key="clear_button"):
     st.session_state.clear_messages = True
 st.title("💪 Train with Mark Ottobre")
 st.caption("If you need any additional info please ask your trainer in the studio or send us an email at info@enterprisefitness.com.au")
 
+# Setup memory for contextual conversation
+msgs = StreamlitChatMessageHistory()
+memory = ConversationBufferMemory(
+    memory_key="chat_history", 
+    chat_memory=msgs, 
+    return_messages=True, 
+    output_key="answer"
+)
+
 if 'retriever' not in st.session_state:
     st.session_state.retriever = configure_retriever(st.session_state.static_files)
 
 retriever = st.session_state.retriever
-
-# Setup memory for contextual conversation
-msgs = StreamlitChatMessageHistory()
-
-memory = ConversationBufferMemory(memory_key="chat_history", chat_memory=msgs, return_messages=True)
 
 # Setup LLM and QA chain
 llm = ChatOpenAI(
@@ -61,15 +48,21 @@ llm = ChatOpenAI(
     streaming=True
 )
 
-qa_chain = RetrievalQA.from_chain_type(
-    llm, 
-    retriever=retriever, 
-    verbose=True,
-    chain_type="stuff",
-    chain_type_kwargs={
-        "prompt": qa_prompt,
-        "memory": memory
-    }
+prompt = ChatPromptTemplate.from_messages([
+    ("system", SYSTEM_TEMPLATE),
+    ("human", HUMAN_TEMPLATE),
+])
+
+qa_chain = ConversationalRetrievalChain.from_llm(
+    llm=llm,
+    retriever=retriever,
+    memory=memory,
+    combine_docs_chain_kwargs={
+        "prompt": prompt,
+        "document_variable_name": "context"
+    },
+    return_source_documents=True,
+    verbose=True
 )
 
 if len(msgs.messages) == 0 or st.session_state.get('clear_messages', False):
@@ -93,17 +86,17 @@ for msg in msgs.messages:
 
 if user_query := st.chat_input(placeholder="Ask me anything!"):
     st.chat_message("user").write(user_query)
-
+    
+    # Process query to remove person names
     doc = nlp(user_query)
     processed_query = ' '.join([token.text for token in doc if token.ent_type_ != 'PERSON'])
-
+    
     with st.chat_message("assistant"):
         retrieval_handler = PrintRetrievalHandler(st.container())
         stream_handler = StreamHandler(st.empty())
         
-        # Use the correct input format for RetrievalQA
-        response = qa_chain({"query": processed_query}, callbacks=[retrieval_handler, stream_handler])
+        response = qa_chain({
+            "question": processed_query
+        }, callbacks=[retrieval_handler, stream_handler])
         
-        # Extract the answer from the response
-        answer = response['result']
-        msgs.add_ai_message(answer)
+        msgs.add_ai_message(response["answer"])
