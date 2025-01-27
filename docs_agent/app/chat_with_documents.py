@@ -9,7 +9,7 @@ from consts import SYSTEM_TEMPLATE, HUMAN_TEMPLATE, REPHRASE_PROMPT
 from handlers import PrintRetrievalHandler, StreamHandler
 import os
 import spacy
-from retrievers import configure_retriever
+from retrievers import configure_retriever, get_static_files
 from langchain.chains import LLMChain
 from langchain.chains.combine_documents.stuff import StuffDocumentsChain
 
@@ -30,6 +30,10 @@ memory = ConversationBufferMemory(
     return_messages=True, 
     output_key="answer"
 )
+
+# Initialize static_files in session state if not already present
+if 'static_files' not in st.session_state:
+    st.session_state.static_files = get_static_files
 
 if 'retriever' not in st.session_state:
     st.session_state.retriever = configure_retriever(st.session_state.static_files)

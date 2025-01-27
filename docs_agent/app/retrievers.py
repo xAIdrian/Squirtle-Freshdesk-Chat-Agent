@@ -12,11 +12,11 @@ from handlers import StaticFile
 script_dir = os.path.dirname(os.path.abspath(__file__))
 
 # Define the path to the 'docs' folder
-pdf_directory = os.path.join(script_dir, 'docs')
+pdf_dir = os.path.join(script_dir, 'docs')
 
 # Check if the directory exists
-if not os.path.exists(pdf_directory):
-    print(f"Directory not found: {pdf_directory}")
+if not os.path.exists(pdf_dir):
+    print(f"Directory not found: {pdf_dir}")
 
 @st.cache_resource
 def configure_retriever(_uploaded_files):
@@ -43,11 +43,11 @@ def configure_retriever(_uploaded_files):
 
     return retriever
 
-# Track uploaded files in session state to persist across reruns
-if "static_files" not in st.session_state:
-    st.session_state.static_files = []
-    for filename in os.listdir(pdf_directory):
+def get_static_files():
+    static_files = []
+    for filename in os.listdir(pdf_dir):
         if filename.endswith('.pdf'):
-            file_path = os.path.join(pdf_directory, filename)
-            static_file = StaticFile(file_path)
-            st.session_state.static_files.append(static_file)
+            file_path = os.path.join(pdf_dir, filename)
+            static_files.append(StaticFile(file_path))
+    
+    return static_files
