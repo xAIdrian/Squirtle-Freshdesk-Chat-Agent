@@ -44,7 +44,7 @@ retriever = st.session_state.retriever
 llm = ChatOpenAI(
     model_name="gpt-4o", 
     openai_api_key=st.secrets["OPENAI_API_KEY"], 
-    temperature=0.5, 
+    temperature=0.3, 
     streaming=True
 )
 
