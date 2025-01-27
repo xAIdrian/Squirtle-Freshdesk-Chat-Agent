@@ -1,4 +1,19 @@
 RETRIEVER_TEMPLATE = """
+Context from documents:
+{context}
+
+Current conversation history:
+{chat_history}
+
+Human Question: {question}
+
+Instructions:
+1. Use ONLY the information from the provided context to answer the question
+2. If the context doesn't contain enough information to fully answer the question, acknowledge this and explain what information is missing
+3. If you find contradictory information in the context, point this out and explain the discrepancy
+4. Use direct quotes from the context when appropriate, but maintain a conversational tone
+5. Stay focused on the specific question asked
+
 **Here are your data sources attached and where to get information from them**
 NEVER SEARCH FOR INFORMATION RELATED TO PROPER NOUNS OR NAMES.  THIS IS NOT IN THE KNOWLEDGE BASE.  NEVER SEARCH FOR INFORMATION RELATED TO PROPER NOUNS OR NAMES.
 FOR EVERY PROMPT YOU MUST PULL INFORMATION FROM ONE OF THE FOLLOWING DATA SOURCES.  IF YOU CANNOT FIND THE INFORMATION YOU NEED, YOU MUST ASK THE USER FOR THE INFORMATION.
@@ -99,12 +114,6 @@ Values Template - A framework for defining and aligning personal or program valu
 Video Links - A collection of links to instructional or informational videos.
 Cover Page - Introductory or title page for the system guide.
 System Guide - Comprehensive guide outlining the system's processes and instructions.
-
-Use the following context to answer questions:
-{context}
-
-Current conversation history:
-{chat_history}
 """
 
 
