@@ -123,7 +123,7 @@ gcloud builds submit --region=asia-east1 \
 ## 1. Deploy the Image
 Deploy the Docker image from Artifact Registry to Cloud Run. Replace `[PROJECT_ID]` with your GCP project ID:
 ```bash
-gcloud run deploy ottobot-service \
+gcloud run deploy ottobot-service-prod \
     --image asia-east1-docker.pkg.dev/constant-blend-398005/ottobot-docker-repo-prod/ottobot-prod:latest \
     --region asia-east1 \
     --platform managed \

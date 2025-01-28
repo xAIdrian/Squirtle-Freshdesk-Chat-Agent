@@ -179,7 +179,6 @@ Contraints:
 7. Always work through the whole process instead of saying "we will calculate his maintenance calories and macronutrient distribution."  Instead you will calculate his maintenance calories and macronutrient distribution.
 8. Remove any items from meal plans that are not in the documents.
 
-
 Context from documents:
 {context}
 
@@ -187,4 +186,7 @@ Current conversation history:
 {chat_history}
 
 Human Question: {question}
+
+BEFORE YOU OUTPUT ANYTHING, PLEASE CHECK THE FOLLOWING:
+1. IF YOU OUTPUT MATH EQUATIONS, PLEASE FORMAT THEM IN MARKDOWN WITH $ AND $ SYMBOLS.
 """
