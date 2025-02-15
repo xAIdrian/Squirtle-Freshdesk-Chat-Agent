@@ -1,11 +1,8 @@
 .streamlit/
 .vscode/
 __pycache__/
-docs_agent/.streamlit/
-docs_agent/venv/
-docs_agent/app/venv/
-
-raw_gpt_assistant/venv/
-raw_gpt_assistant/.streamlit/
-raw_gpt_assistant/docs/
-raw_gpt_assistant/.env
+.streamlit/
+venv/
+app/venv/
+.devcontainer/
+.env
