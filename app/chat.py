@@ -11,7 +11,10 @@ from handlers import PrintRetrievalHandler, StreamHandler
 from retrievers import configure_retriever, get_static_files
 from langchain.chains import LLMChain
 from langchain.chains.combine_documents.stuff import StuffDocumentsChain
+import os
+import dotenv
 
+dotenv.load_dotenv()
 
 nlp = spacy.load("en_core_web_sm")
 
@@ -29,10 +32,6 @@ memory = ConversationBufferMemory(
     output_key="answer"
 )
 
-# Initialize static_files in session state if not already present
-if 'static_files' not in st.session_state:
-    st.session_state.static_files = get_static_files()
-
 if 'retriever' not in st.session_state:
     st.session_state.retriever = configure_retriever(st.session_state.static_files)
 
@@ -41,7 +40,7 @@ retriever = st.session_state.retriever
 # Setup LLM and QA chain
 llm = ChatOpenAI(
     model_name="gpt-4o", 
-    openai_api_key=st.secrets["OPENAI_API_KEY"], 
+    openai_api_key=os.getenv("OPENAI_API_KEY"), 
     temperature=0.0, 
     streaming=True
 )

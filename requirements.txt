@@ -18,3 +18,4 @@ spacy
 dotenv-python
 requests
 chromadb
+pinecone
