@@ -1,20 +1,4 @@
-python3 -m pip install openai langchain streamlit pandas
-
-mkdir .streamlit
-touch .streamlit/secrets.toml
-openai_api_key = "sk-your-actual-api-key-here"
-
-For Production/Streamlit Cloud:
-Go to your app dashboard on Streamlit Cloud
-Navigate to App Settings > Secrets
-Add your secret in the same format:
-```
-openai_api_key = "sk-your-actual-api-key-here"
-```
-You can then access the secret in your code using:
-```
-openai_api_key = st.secrets["openai_api_key"]
-```
+<img align="right" width="400" src="https://github.com/user-attachments/assets/8d07e363-3856-4ece-8303-04052d1f65e9"/>
 
 ### Sure but how do we deploy the app?
 
