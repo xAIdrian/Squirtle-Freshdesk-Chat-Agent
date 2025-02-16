@@ -1,5 +1,4 @@
 import requests
-import time
 from datetime import datetime, timedelta
 import os
 from typing import List, Dict, Optional
@@ -9,8 +8,11 @@ import json
 
 dotenv.load_dotenv()
 
+api_key = os.getenv("FRESHDESK_API_KEY")
+domain = os.getenv("FRESHDESK_DOMAIN")
+
 class FreshdeskBatchFetcher:
-    def __init__(self, api_key: str, domain: str):
+    def __init__(self, api_key: str = api_key, domain: str = domain):
         self.api_key = api_key
         self.domain = domain
         self.auth = (api_key, 'X')
@@ -105,9 +107,6 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
     limit = args.limit if args.limit else 5
-
-    api_key = os.getenv("FRESHDESK_API_KEY")
-    domain = os.getenv("FRESHDESK_DOMAIN")
     
     fetcher = FreshdeskBatchFetcher(api_key, domain)
     

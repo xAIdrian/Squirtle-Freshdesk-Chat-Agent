@@ -19,3 +19,4 @@ dotenv-python
 requests
 chromadb
 pinecone
+langchain-pinecone
