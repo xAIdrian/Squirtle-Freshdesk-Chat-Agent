@@ -26,50 +26,45 @@ st.title("Alpine Reports")
 # Setup memory for contextual conversation
 msgs = StreamlitChatMessageHistory()
 memory = ConversationBufferMemory(
-    memory_key="chat_history", 
-    chat_memory=msgs, 
-    return_messages=True, 
-    output_key="answer"
+    memory_key="chat_history",
+    chat_memory=msgs,
+    return_messages=True,
+    output_key="answer",
 )
 
-if 'retriever' not in st.session_state:
+if "retriever" not in st.session_state:
     st.session_state.retriever = configure_retriever(st.session_state.static_files)
 
 retriever = st.session_state.retriever
 
 # Setup LLM and QA chain
 llm = ChatOpenAI(
-    model_name="gpt-4o", 
-    openai_api_key=os.getenv("OPENAI_API_KEY"), 
-    temperature=0.0, 
-    streaming=True
+    model_name="gpt-4o",
+    openai_api_key=os.getenv("OPENAI_API_KEY"),
+    temperature=0.0,
+    streaming=True,
 )
 
-combine_docs_prompt = ChatPromptTemplate.from_messages([
-    ("system", SYSTEM_TEMPLATE),
-    ("human", HUMAN_TEMPLATE),
-])
-
-combine_docs_chain_llm = LLMChain(
-    llm=llm,
-    prompt=combine_docs_prompt
+combine_docs_prompt = ChatPromptTemplate.from_messages(
+    [
+        ("system", SYSTEM_TEMPLATE),
+        ("human", HUMAN_TEMPLATE),
+    ]
 )
+
+combine_docs_chain_llm = LLMChain(llm=llm, prompt=combine_docs_prompt)
 
 combine_docs_chain = StuffDocumentsChain(
     llm_chain=combine_docs_chain_llm,
     document_variable_name="context",
     document_prompt=PromptTemplate(
-        input_variables=["page_content"],
-        template="{page_content}"
-    )
+        input_variables=["page_content"], template="{page_content}"
+    ),
 )
 
 rephrase_prompt = PromptTemplate.from_template(REPHRASE_PROMPT)
 
-question_generator = LLMChain(
-    llm=llm,
-    prompt=rephrase_prompt
-)
+question_generator = LLMChain(llm=llm, prompt=rephrase_prompt)
 
 qa_chain = ConversationalRetrievalChain(
     retriever=st.session_state.retriever,
@@ -77,10 +72,10 @@ qa_chain = ConversationalRetrievalChain(
     question_generator=question_generator,
     memory=memory,
     return_source_documents=True,
-    verbose=True
+    verbose=True,
 )
 
-if len(msgs.messages) == 0 or st.session_state.get('clear_messages', False):
+if len(msgs.messages) == 0 or st.session_state.get("clear_messages", False):
     msgs.clear()
     msgs.add_ai_message("""What can I get started for you today?""")
     st.session_state.clear_messages = False
@@ -91,17 +86,19 @@ for msg in msgs.messages:
 
 if user_query := st.chat_input(placeholder="Ask me anything!"):
     st.chat_message("user").write(user_query)
-    
+
     # Process query to remove person names
     doc = nlp(user_query)
-    processed_query = ' '.join([token.text for token in doc if token.ent_type_ != 'PERSON'])
-    
+    processed_query = " ".join(
+        [token.text for token in doc if token.ent_type_ != "PERSON"]
+    )
+
     with st.chat_message("assistant"):
         retrieval_handler = PrintRetrievalHandler(st.container())
         stream_handler = StreamHandler(st.empty())
-        
-        response = qa_chain({
-            "question": processed_query
-        }, callbacks=[retrieval_handler, stream_handler])
-        
+
+        response = qa_chain(
+            {"question": processed_query}, callbacks=[retrieval_handler, stream_handler]
+        )
+
         msgs.add_ai_message(response["answer"])
