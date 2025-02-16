@@ -70,12 +70,13 @@ def json_to_documents(json_data: List[Dict]) -> List[Document]:
         )
         documents.append(doc)
     
-    return documents
+    ids = [str(item.get('id')) for item in json_data]
+    return documents, ids
 
 def upload_to_pinecone(json_data: List[Dict]):
     """Upload JSON data to Pinecone and return the index"""
     # Convert JSON to documents
-    docs = json_to_documents(json_data)
+    docs, ids = json_to_documents(json_data)
 
     # Split documents if needed
     text_splitter = RecursiveCharacterTextSplitter(
@@ -92,8 +93,10 @@ def upload_to_pinecone(json_data: List[Dict]):
     )
     
     vector_store = PineconeVectorStore(index=index, embedding=embeddings)
+    uploads = vector_store.add_documents(documents=docs, ids=ids)
     
     print("🚀 Data uploaded successfully")
+    print(uploads)
     return vector_store
 
 def test_pinecone_data():
