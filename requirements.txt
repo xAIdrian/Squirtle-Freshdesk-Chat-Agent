@@ -17,3 +17,4 @@ langchain-openai
 spacy
 dotenv-python
 requests
+chromadb
