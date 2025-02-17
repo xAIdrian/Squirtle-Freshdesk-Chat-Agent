@@ -20,3 +20,4 @@ requests
 chromadb
 pinecone
 langchain-pinecone
+beautifulsoup4
