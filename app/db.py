@@ -14,7 +14,7 @@ api_key = os.environ.get("PINECONE_API_KEY")
 openai_api_key = os.environ.get("OPENAI_API_KEY") or "OPENAI_API_KEY"
 model_name = "text-embedding-ada-002"
 
-index_name = "langchain-retrieval-agent-fast-v2"
+index_name = "freshdesk-tickets-v1"
 # configure client
 pc = Pinecone(api_key=api_key)
 cloud = os.environ.get("PINECONE_CLOUD") or "aws"
@@ -22,17 +22,17 @@ region = os.environ.get("PINECONE_REGION") or "us-east-1"
 
 spec = ServerlessSpec(cloud=cloud, region=region)
 
-if index_name in pc.list_indexes().names():
-    pc.delete_index(index_name)
+# if index_name in pc.list_indexes().names():
+# pc.delete_index(index_name)
 
 # we create a new index if one has not been created already
-# if index_name not in pc.list_indexes().names():
-pc.create_index(
-    index_name,
-    dimension=1536,  # dimensionality of text-embedding-ada-002
-    metric="dotproduct",
-    spec=spec,
-)
+if index_name not in pc.list_indexes().names():
+    pc.create_index(
+        index_name,
+        dimension=1536,  # dimensionality of text-embedding-ada-002
+        metric="dotproduct",
+        spec=spec,
+    )
 
 # wait for index to be initialized
 while not pc.describe_index(index_name).status["ready"]:
@@ -59,15 +59,24 @@ def json_to_documents(json_data: List[Dict]) -> List[Document]:
     for item in json_data:
         content = f"""
         Subject: {item.get('subject', '')}
-        Description: {item.get('description', '')}
+        Description: {item.get('description_text', '')}
         """
+
+        if item.get("status") == 2:
+            item_status = "Open"
+        elif item.get("status") == 3:
+            item_status = "Pending"
+        elif item.get("status") == 4:
+            item_status = "Resolved"
+        elif item.get("status") == 5:
+            item_status = "Closed"
 
         # Create metadata from other relevant fields
         metadata = {
+            "sender_emails": ", ".join(item.get("cc_emails", [])),
             "ticket_id": item.get("id"),
             "created_at": item.get("created_at"),
-            "status": item.get("status"),
-            "priority": item.get("priority"),
+            "status": item_status,
         }
 
         doc = Document(page_content=content.strip(), metadata=metadata)

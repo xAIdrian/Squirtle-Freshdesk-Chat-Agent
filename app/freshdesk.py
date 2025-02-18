@@ -8,6 +8,7 @@ import os
 from db import upload_to_pinecone, json_to_documents
 from bs4 import BeautifulSoup
 import re
+import json
 
 dotenv.load_dotenv()
 
@@ -32,7 +33,7 @@ def clean_html_text(html_string: str) -> str:
     return text
 
 
-def get_max_tickets(per_page: int = 100):
+def paginate_all_tickets_to_pinecone(per_page: int = 25):
 
     headers = {"Content-Type": "application/json"}
 
@@ -54,8 +55,8 @@ def get_max_tickets(per_page: int = 100):
             break
 
         for item in data:
-            clean_description = clean_html_text(item.get("description", ""))
-            item["description"] = clean_description
+            clean_description = clean_html_text(item.get("description_text", ""))
+            item["description_text"] = clean_description
 
         tickets.extend(data)
         print(f"📥 Pulled {len(data)} tickets from page {page}", end="\n")
@@ -189,4 +190,4 @@ if __name__ == "__main__":
     #     )
 
     # print(json.dumps(tickets, indent=4))
-    get_max_tickets()
+    paginate_all_tickets_to_pinecone()
